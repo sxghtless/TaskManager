@@ -31,7 +31,7 @@ class TaskService(DefaultService):
     def update(self, task_id: int, data: TaskUpdate) -> Task:
         task = self.get(task_id)
         if task.status == TaskStatus.DONE and data.status and data.status != TaskStatus.DONE:
-            raise appException.task.TaskStatusRollbackForbidden(task.status, data.status)
+            raise appException.task.TaskStatusRollbackForbidden()
         return self.repo.update(task, data)
 
     def delete(self, task_id: int) -> None:
