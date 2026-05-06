@@ -9,8 +9,8 @@ class TaskNotFound(AppExceptionCase):
         super().__init__(self.status_code, self.message)
 
 class TaskStatusRollbackForbidden(AppExceptionCase):
+    message = "Jumping back from 'DONE' is not possible"
     status_code = 400
 
-    def __init__(self, from_status: str, to_status: str) -> None:
-        super().__init__(self.status_code,f"cannot transition from '{from_status}' to '{to_status}'"
-        )
+    def __init__(self) -> None:
+        super().__init__(self.status_code, self.message)
