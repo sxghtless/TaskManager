@@ -1,3 +1,5 @@
+import os
+
 from pydantic import Extra
 from pydantic_settings import BaseSettings
 
@@ -6,6 +8,7 @@ class Settings(BaseSettings, extra=Extra.ignore):
     host: str = '0.0.0.0'
     port: int = 8000
     app_name: str = 'taskmanager'
+    project_path: str = os.path.dirname(__file__)
     POSTGRES_HOST: str = ''
     POSTGRES_USER: str = ''
     POSTGRES_PASSWORD: str = ''

@@ -6,9 +6,10 @@ import appException
 
 from database.task import Task
 from repository.task import TaskRepository
-from schema.task import TaskIn, TaskUpdate, TaskStatus
+from schema.task import TaskIn, TaskUpdate, TaskStatus, TaskOut
 
 from service.service import DefaultService
+from utils.redis import invalidate_tasks_cache, get_cached_tasks, set_cached_tasks
 
 
 class TaskService(DefaultService):
@@ -17,6 +18,7 @@ class TaskService(DefaultService):
         self.repo = TaskRepository(session)
 
     def create(self, data: TaskIn) -> Task:
+        invalidate_tasks_cache()
         return self.repo.create(data)
 
     def get(self, task_id: int) -> Task:
@@ -25,15 +27,24 @@ class TaskService(DefaultService):
             raise appException.task.TaskNotFound()
         return task
 
-    def list(self, assignee: Optional[str] = None, status: Optional[TaskStatus] = None) -> list[Task]:
+    def list(self, assignee: Optional[str] = None, status: Optional[TaskStatus] = None) -> list[TaskOut]:
+        if assignee is None and status is None:
+            cached = get_cached_tasks()
+            if cached:
+                return [TaskOut(**i) for i in cached]
+            tasks = self.repo.list()
+            set_cached_tasks([TaskOut.model_validate(task).model_dump(mode="json") for task in tasks])
+            return tasks
         return self.repo.list(assignee=assignee, status=status)
 
     def update(self, task_id: int, data: TaskUpdate) -> Task:
         task = self.get(task_id)
         if task.status == TaskStatus.DONE and data.status and data.status != TaskStatus.DONE:
             raise appException.task.TaskStatusRollbackForbidden()
+        invalidate_tasks_cache()
         return self.repo.update(task, data)
 
     def delete(self, task_id: int) -> None:
         task = self.get(task_id)
         self.repo.delete(task)
+        invalidate_tasks_cache()

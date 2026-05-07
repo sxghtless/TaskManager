@@ -4,7 +4,7 @@ import sys
 
 from fastapi import FastAPI
 
-from src.config import get_settings
+from config import get_settings
 
 logger = logging.getLogger(__name__)
 
