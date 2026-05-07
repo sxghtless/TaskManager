@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, func, Text, Integer
+from sqlalchemy import DateTime, func, Text, Integer, Enum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Base
@@ -15,7 +15,7 @@ class Task(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     assignee: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[str] = mapped_column(Text, default=TaskStatus.TODO)
+    status: Mapped[str] = mapped_column(Enum(TaskStatus), default=TaskStatus.TODO)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, onupdate=func.now())
